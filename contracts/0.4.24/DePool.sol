@@ -25,6 +25,8 @@ import "./lib/Pausable.sol";
 contract DePool is IDePool, IsContract, Pausable, AragonApp {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
+    // See "Unstructured Storage Pattern"
+    // https://blog.openzeppelin.com/upgradeability-using-unstructured-storage
     using UnstructuredStorage for bytes32;
 
     /// ACL
@@ -175,6 +177,12 @@ contract DePool is IDePool, IsContract, Pausable, AragonApp {
 
     /**
       * @notice Set maximum number of Ethereum 2.0 validators registered in a single transaction.
+      * @dev The number of Deposit contract registrations per submission can be fine-tuned to avoid 
+      *      out-of-gas issues in the loop and to keep the required gasLimit on adequate level for
+      *      to be included into the block.
+      *      With the growth of Deposit's contract structure, the actual gas consumption per iteration
+      *      may increase. Node optimizations can oppositely increase the network capacity and block
+      *      gasLimit.
       */
     function setDepositIterationLimit(uint256 _limit) external auth(SET_DEPOSIT_ITERATION_LIMIT) {
         _setDepositIterationLimit(_limit);
@@ -250,7 +258,8 @@ contract DePool is IDePool, IsContract, Pausable, AragonApp {
     }
 
     /**
-      * @notice Returns staking rewards fee rate
+      * @notice Return staking rewards fee rate nominated in basisPoints
+      * @return Staking rewards fee
       */
     function getFee() external view returns (uint16 feeBasisPoints) {
         return _getFee();
@@ -258,6 +267,11 @@ contract DePool is IDePool, IsContract, Pausable, AragonApp {
 
     /**
       * @notice Returns fee distribution proportion
+      * @dev Sum af all returned values should be equal to 10000 basisPoints
+      * @return amount of basisPoints allocated for:
+      *         - treasury vault
+      *         - insurance vault
+      *         - service providers
       */
     function getFeeDistribution()
         external
