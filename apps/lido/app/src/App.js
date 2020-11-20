@@ -11,13 +11,13 @@ import {
   useTheme,
   IconConnect,
   IconRemove,
-  TransactionBadge,
 } from '@aragon/ui'
 import Button from '@aragon/ui/dist/Button'
 import ChangeFeeSidePanel from './components/ChangeFeeSidePanel'
 import ChangeWCSidePanel from './components/ChangeWCSidePanel'
 import { ListItem } from './components/ListItem'
 import StakeSidePanel from './components/StakeSidePanel'
+import WcBadge from './components/WcBadge'
 
 export default function App() {
   const { api, appState, currentApp, guiStyle } = useAragonApi()
@@ -144,11 +144,7 @@ export default function App() {
         content: (
           <span style={{ display: 'flex', alignItems: 'center' }}>
             {withdrawalCredentials ? (
-              <TransactionBadge
-                transaction={withdrawalCredentials}
-                shorten
-                disabled
-              />
+              <WcBadge wc={withdrawalCredentials} />
             ) : (
               <strong>None</strong>
             )}
