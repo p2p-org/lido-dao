@@ -244,7 +244,14 @@ export default function App() {
         content: <IdentityBadge entity={oracle} />,
       },
     ]
-  }, [appState, resume, stop, theme.negative, theme.positive])
+  }, [
+    appState,
+    openChangeFeeDistrPanel,
+    resume,
+    stop,
+    theme.negative,
+    theme.positive,
+  ])
 
   const ether2StatData = useMemo(() => {
     const { ether2Stat } = appState
