@@ -23,7 +23,6 @@ const DEFAULT_DAO_SETTINGS = {
   voteDuration: 60 * 3, // 3 minutes
   votingSupportRequired: '500000000000000000', // 50e16 basis points === 50%
   votingMinAcceptanceQuorum: '50000000000000000', // 5e16 basis points === 5%
-  depositIterationLimit: 16,
   beaconSpec: [
     225, // epochsPerFrame:
     32, // slotsPerEpoch
@@ -232,7 +231,6 @@ async function deployDAO({
       daoInitialSettings.stakes,
       votingSettings,
       depositContractAddress,
-      daoInitialSettings.depositIterationLimit,
       daoInitialSettings.beaconSpec,
       { from: owner }
     )
