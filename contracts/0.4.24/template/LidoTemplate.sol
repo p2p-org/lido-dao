@@ -80,8 +80,7 @@ contract LidoTemplate is BaseTemplate {
         address[] _holders,
         uint256[] _stakes,
         uint64[3] _votingSettings,
-        address _BeaconDepositContract,
-        uint256 _depositIterationLimit
+        address _BeaconDepositContract
     )
         external
     {
@@ -99,7 +98,7 @@ contract LidoTemplate is BaseTemplate {
         state.token = _createToken(_tokenName, _tokenSymbol, TOKEN_DECIMALS);
         (state.dao, state.acl) = _createDAO();
 
-        _setupApps(state, _votingSettings, _BeaconDepositContract, _depositIterationLimit);
+        _setupApps(state, _votingSettings, _BeaconDepositContract);
 
         deployState = state;
     }
@@ -107,9 +106,9 @@ contract LidoTemplate is BaseTemplate {
     function finalizeDAO() external {
         // read from the storage once to prevent gas spending on SLOADs
         DeployState memory state = deployState;
-        
+
         require(state.dao != address(0), "DAO_NOT_DEPLOYED");
-        
+
         // revert the cells back to get a refund
         _resetStorage();
 
@@ -122,8 +121,7 @@ contract LidoTemplate is BaseTemplate {
     function _setupApps(
         DeployState memory state,
         uint64[3] memory _votingSettings,
-        address _BeaconDepositContract,
-        uint256 _depositIterationLimit
+        address _BeaconDepositContract
     )
         internal
     {
@@ -143,8 +141,7 @@ contract LidoTemplate is BaseTemplate {
             state.steth,
             _BeaconDepositContract,
             state.oracle,
-            state.operators,
-            _depositIterationLimit
+            state.operators
         );
         state.lido = Lido(_installNonDefaultApp(state.dao, LIDO_APP_ID, initializeData));
 
@@ -186,7 +183,6 @@ contract LidoTemplate is BaseTemplate {
         state.acl.createPermission(state.voting, state.lido, state.lido.MANAGE_FEE(), state.voting);
         state.acl.createPermission(state.voting, state.lido, state.lido.MANAGE_WITHDRAWAL_KEY(), state.voting);
         state.acl.createPermission(state.voting, state.lido, state.lido.SET_ORACLE(), state.voting);
-        state.acl.createPermission(state.voting, state.lido, state.lido.SET_DEPOSIT_ITERATION_LIMIT(), state.voting);
     }
 
     function _resetStorage() internal {

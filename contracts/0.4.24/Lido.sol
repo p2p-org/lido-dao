@@ -32,7 +32,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     bytes32 constant public MANAGE_FEE = keccak256("MANAGE_FEE");
     bytes32 constant public MANAGE_WITHDRAWAL_KEY = keccak256("MANAGE_WITHDRAWAL_KEY");
     bytes32 constant public SET_ORACLE = keccak256("SET_ORACLE");
-    bytes32 constant public SET_DEPOSIT_ITERATION_LIMIT = keccak256("SET_DEPOSIT_ITERATION_LIMIT");
 
     uint256 constant public PUBKEY_LENGTH = 48;
     uint256 constant public WITHDRAWAL_CREDENTIALS_LENGTH = 32;
@@ -42,6 +41,9 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
 
     uint256 internal constant MIN_DEPOSIT_AMOUNT = 1 ether;     // validator_registration.vy
     uint256 internal constant DEPOSIT_AMOUNT_UNIT = 1000000000 wei;     // validator_registration.vy
+
+    /// @dev default value for maximum number of Ethereum 2.0 validators registered in a single depositBufferedEther call
+    uint256 internal constant DEFAULT_MAX_DEPOSITS_PER_CALL = 16;
 
     bytes32 internal constant FEE_VALUE_POSITION = keccak256("lido.Lido.fee");
     bytes32 internal constant TREASURY_FEE_VALUE_POSITION = keccak256("lido.Lido.treasuryFee");
@@ -66,9 +68,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     /// @dev last epoch reported by the oracle
     bytes32 internal constant LAST_ORACLE_EPOCH_VALUE_POSITION = keccak256("lido.Lido.lastOracleEpoch");
 
-    /// @dev maximum number of Ethereum 2.0 validators registered in a single transaction
-    bytes32 internal constant DEPOSIT_ITERATION_LIMIT_VALUE_POSITION = keccak256("lido.Lido.depositIterationLimit");
-
 
     /// @dev Credentials which allows the DAO to withdraw Ether on the 2.0 side
     bytes private withdrawalCredentials;
@@ -89,8 +88,7 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
         ISTETH _token,
         IValidatorRegistration validatorRegistration,
         address _oracle,
-        INodeOperatorsRegistry _operators,
-        uint256 _depositIterationLimit
+        INodeOperatorsRegistry _operators
     )
         public onlyInit
     {
@@ -98,7 +96,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
         _setValidatorRegistrationContract(validatorRegistration);
         _setOracle(_oracle);
         _setOperators(_operators);
-        _setDepositIterationLimit(_depositIterationLimit);
 
         initialized();
     }
@@ -119,10 +116,17 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     }
 
     /**
-      * @notice Deposits buffered eth to the DepositContract
+      * @notice Deposits buffered eth to the DepositContract.
       */
     function depositBufferedEther() external {
-        return _depositBufferedEther();
+        return _depositBufferedEther(DEFAULT_MAX_DEPOSITS_PER_CALL);
+    }
+
+    /**
+      * @notice Deposits buffered eth to the DepositContract, making no more than `_maxDeposits` deposit calls.
+      */
+    function depositBufferedEther(uint256 _maxDeposits) external {
+        return _depositBufferedEther(_maxDeposits);
     }
 
     /**
@@ -178,13 +182,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
       */
     function setOracle(address _oracle) external auth(SET_ORACLE) {
         _setOracle(_oracle);
-    }
-
-    /**
-      * @notice Set maximum number of Ethereum 2.0 validators registered in a single transaction.
-      */
-    function setDepositIterationLimit(uint256 _limit) external auth(SET_DEPOSIT_ITERATION_LIMIT) {
-        _setDepositIterationLimit(_limit);
     }
 
     /**
@@ -321,13 +318,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     }
 
     /**
-      * @notice Gets maximum number of Ethereum 2.0 validators registered in a single transaction
-      */
-    function getDepositIterationLimit() public view returns (uint256) {
-        return DEPOSIT_ITERATION_LIMIT_VALUE_POSITION.getStorageUint256();
-    }
-
-    /**
       * @notice Returns the value against which the next reward will be calculated
       * This method can be discarded in the future
       */
@@ -402,14 +392,6 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     }
 
     /**
-      * @notice Internal function to set deposit loop iteration limit
-      */
-    function _setDepositIterationLimit(uint256 _limit) internal {
-        require(0 != _limit, "ZERO_LIMIT");
-        DEPOSIT_ITERATION_LIMIT_VALUE_POSITION.setStorageUint256(_limit);
-    }
-
-    /**
       * @dev Processes user deposit: mints liquid tokens and increases the pool buffer
       */
     function _submit(address _referral) internal whenNotStopped returns (uint256 StETH) {
@@ -434,7 +416,7 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     /**
       * @dev Deposits buffered eth to the DepositContract: assigns chunked deposits to node operators
       */
-    function _depositBufferedEther() internal whenNotStopped {
+    function _depositBufferedEther(uint256 _maxDeposits) internal whenNotStopped {
         uint256 buffered = _getBufferedEther();
         if (buffered >= DEPOSIT_SIZE) {
             uint256 unaccounted = _getUnaccountedEther();
@@ -442,7 +424,7 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
             uint256 toUnbuffer = buffered.div(DEPOSIT_SIZE).mul(DEPOSIT_SIZE);
             assert(toUnbuffer <= buffered && toUnbuffer != 0);
 
-            _markAsUnbuffered(_ETH2Deposit(toUnbuffer));
+            _markAsUnbuffered(_ETH2Deposit(toUnbuffer, _maxDeposits));
 
             assert(_getUnaccountedEther() == unaccounted);
         }
@@ -451,9 +433,10 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
     /**
       * @dev Makes a deposit to the ETH 2.0 side
       * @param _amount Total amount to deposit to the ETH 2.0 side
+      *
       * @return actually deposited amount
       */
-    function _ETH2Deposit(uint256 _amount) internal returns (uint256) {
+    function _ETH2Deposit(uint256 _amount, uint256 _maxDeposits) internal returns (uint256) {
         assert(_amount >= MIN_DEPOSIT_AMOUNT);
 
         // Memory is very cheap, although you don't want to grow it too much.
@@ -461,10 +444,9 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
         if (0 == cache.length)
             return 0;
 
-        uint256 totalDepositCalls = 0;
-        uint256 maxDepositCalls = getDepositIterationLimit();
+        uint256 totalDeposits = 0;
         uint256 depositAmount = _amount;
-        while (depositAmount != 0 && totalDepositCalls < maxDepositCalls) {
+        while (depositAmount != 0 && totalDeposits < _maxDeposits) {
             // Finding the best suitable operator
             uint256 bestOperatorIdx = cache.length;   // 'not found' flag
             uint256 smallestStake;
@@ -491,7 +473,7 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
 
             // Invoking deposit for the best operator
             depositAmount = depositAmount.sub(DEPOSIT_SIZE);
-            ++totalDepositCalls;
+            ++totalDeposits;
 
             (bytes memory key, bytes memory signature, bool used) =  /* solium-disable-line */
                 getOperators().getSigningKey(cache[bestOperatorIdx].id, cache[bestOperatorIdx].usedSigningKeys++);
@@ -501,7 +483,7 @@ contract Lido is ILido, IsContract, Pausable, AragonApp {
             _stake(key, signature);
         }
 
-        uint256 deposited = totalDepositCalls.mul(DEPOSIT_SIZE);
+        uint256 deposited = totalDeposits.mul(DEPOSIT_SIZE);
         if (0 != deposited) {
             REWARD_BASE_VALUE_POSITION.setStorageUint256(REWARD_BASE_VALUE_POSITION.getStorageUint256().add(deposited));
             _write_back_operator_cache(cache);

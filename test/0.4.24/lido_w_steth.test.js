@@ -77,7 +77,6 @@ contract('Lido with StEth', ([appManager, voting, user1, user2, user3, nobody, n
     await acl.createPermission(voting, app.address, await app.PAUSE_ROLE(), appManager, { from: appManager })
     await acl.createPermission(voting, app.address, await app.MANAGE_FEE(), appManager, { from: appManager })
     await acl.createPermission(voting, app.address, await app.MANAGE_WITHDRAWAL_KEY(), appManager, { from: appManager })
-    await acl.createPermission(voting, app.address, await app.SET_DEPOSIT_ITERATION_LIMIT(), appManager, { from: appManager })
 
     await acl.createPermission(app.address, token.address, await token.MINT_ROLE(), appManager, { from: appManager })
     await acl.createPermission(app.address, token.address, await token.BURN_ROLE(), appManager, { from: appManager })
@@ -95,7 +94,7 @@ contract('Lido with StEth', ([appManager, voting, user1, user2, user3, nobody, n
     })
 
     // Initialize the app's proxy.
-    await app.initialize(token.address, validatorRegistration.address, oracle.address, operators.address, 10)
+    await app.initialize(token.address, validatorRegistration.address, oracle.address, operators.address)
     treasuryAddr = await app.getTreasury()
     insuranceAddr = await app.getInsuranceFund()
     await oracle.setPool(app.address)
