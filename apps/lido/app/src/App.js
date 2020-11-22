@@ -87,7 +87,7 @@ export default function App() {
       // operators,
       // treasury,
       // insuranceFund,
-      // ether2Stat,
+      // beaconStat,
     } = appState
 
     return [
@@ -258,13 +258,15 @@ export default function App() {
     theme.positive,
   ])
 
-  const ether2StatData = useMemo(() => {
-    const { ether2Stat } = appState
-
-    return Object.entries(ether2Stat).map(([key, value]) => ({
-      label: key,
-      content: <strong>{value}</strong>,
-    }))
+  const beaconStatData = useMemo(() => {
+    const { beaconStat: stat } = appState
+    return [
+      {
+        label: 'Deposits',
+        content: <strong>{stat.depositedValidators}</strong>,
+      },
+      { label: 'Balance', content: <strong>{stat.beaconBalance}</strong> },
+    ]
   }, [appState])
 
   const [dbePanelOpen, setDbePanelOpen] = useState(false)
@@ -306,9 +308,9 @@ export default function App() {
           </Box>
         }
         secondary={
-          <Box heading="ether2Stat">
+          <Box heading="Beacon stat">
             <ul>
-              {ether2StatData.map(({ label, content }, index) => (
+              {beaconStatData.map(({ label, content }, index) => (
                 <ListItem key={label + index}>
                   <span>{label}</span>
                   <span>:</span>
