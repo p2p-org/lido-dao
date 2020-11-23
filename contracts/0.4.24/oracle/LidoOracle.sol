@@ -118,7 +118,7 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
         uint64 _secondsPerSlot,
         uint64 _genesisTime
     )
-        external auth(SET_BEACON_SPEC)
+        external
     {
         require(_epochsPerFrame > 0);
         require(_slotsPerEpoch > 0);
@@ -135,7 +135,7 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
       * @notice Add `_member` to the oracle member committee
       * @param _member Address of a member to add
       */
-    function addOracleMember(address _member) external auth(MANAGE_MEMBERS) {
+    function addOracleMember(address _member) external {
         require(members.length < MAX_MEMBERS, "TOO_MANY_MEMBERS");
         require(address(0) != _member, "BAD_ARGUMENT");
         require(MEMBER_NOT_FOUND == _getMemberId(_member), "MEMBER_EXISTS");
@@ -155,7 +155,7 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
      * @notice Remove `_member` from the oracle member committee
      * @param _member Address of a member to remove
      */
-    function removeOracleMember(address _member) external auth(MANAGE_MEMBERS) {
+    function removeOracleMember(address _member) external {
         require(members.length > quorum, "QUORUM_WONT_BE_MADE");
 
         uint256 index = _getMemberId(_member);
@@ -181,7 +181,7 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
     /**
      * @notice Set the number of oracle members required to form a data point to `_quorum`
      */
-    function setQuorum(uint256 _quorum) external auth(MANAGE_QUORUM) {
+    function setQuorum(uint256 _quorum) external {
         require(members.length >= _quorum && 0 != _quorum, "QUORUM_WONT_BE_MADE");
 
         quorum = _quorum;

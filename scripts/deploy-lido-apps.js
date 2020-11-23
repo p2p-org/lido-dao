@@ -78,6 +78,7 @@ async function publishApp(appName, env, netName, appsDirPath, releaseType) {
       releaseType,
       '--network',
       netName,
+      '--skip-validation',
       // workaround: force to read URL from Buidler config
       '--ipfs-api-url',
       ''

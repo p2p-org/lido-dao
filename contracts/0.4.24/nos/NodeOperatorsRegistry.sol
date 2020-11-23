@@ -93,7 +93,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @return a unique key of the added operator
       */
     function addNodeOperator(string _name, address _rewardAddress, uint64 _stakingLimit) external
-        auth(ADD_NODE_OPERATOR_ROLE)
         validAddress(_rewardAddress)
         returns (uint256 id)
     {
@@ -113,7 +112,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice `_active ? 'Enable' : 'Disable'` the node operator #`_id`
       */
     function setNodeOperatorActive(uint256 _id, bool _active) external
-        authP(SET_NODE_OPERATOR_ACTIVE_ROLE, arr(_id, _active ? uint256(1) : uint256(0)))
         operatorExists(_id)
     {
         if (operators[_id].active != _active) {
@@ -132,7 +130,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice Change human-readable name of the node operator #`_id` to `_name`
       */
     function setNodeOperatorName(uint256 _id, string _name) external
-        authP(SET_NODE_OPERATOR_NAME_ROLE, arr(_id))
         operatorExists(_id)
     {
         operators[_id].name = _name;
@@ -143,7 +140,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice Change reward address of the node operator #`_id` to `_rewardAddress`
       */
     function setNodeOperatorRewardAddress(uint256 _id, address _rewardAddress) external
-        authP(SET_NODE_OPERATOR_ADDRESS_ROLE, arr(_id, uint256(_rewardAddress)))
         operatorExists(_id)
         validAddress(_rewardAddress)
     {
@@ -155,7 +151,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice Set the maximum number of validators to stake for the node operator #`_id` to `_stakingLimit`
       */
     function setNodeOperatorStakingLimit(uint256 _id, uint64 _stakingLimit) external
-        authP(SET_NODE_OPERATOR_LIMIT_ROLE, arr(_id, uint256(_stakingLimit)))
         operatorExists(_id)
     {
         operators[_id].stakingLimit = _stakingLimit;
@@ -166,7 +161,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice Report `_stoppedIncrement` more stopped validators of the node operator #`_id`
       */
     function reportStoppedValidators(uint256 _id, uint64 _stoppedIncrement) external
-        authP(REPORT_STOPPED_VALIDATORS_ROLE, arr(_id, uint256(_stoppedIncrement)))
         operatorExists(_id)
     {
         require(0 != _stoppedIncrement, "EMPTY_VALUE");
@@ -182,7 +176,7 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @param _ids Array of node operator ids
       * @param _usedSigningKeys Array of corresponding used key counts (the same length as _ids)
       */
-    function updateUsedKeys(uint256[] _ids, uint64[] _usedSigningKeys) external onlyPool {
+    function updateUsedKeys(uint256[] _ids, uint64[] _usedSigningKeys) external {
         require(_ids.length == _usedSigningKeys.length, "BAD_LENGTH");
         for (uint256 i = 0; i < _ids.length; ++i) {
             require(_ids[i] < totalOperatorsCount, "NODE_OPERATOR_NOT_FOUND");
@@ -205,7 +199,7 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @notice Remove unused signing keys
       * @dev Function is used by the pool
       */
-    function trimUnusedKeys() external onlyPool {
+    function trimUnusedKeys() external {
         uint256 length = totalOperatorsCount;
         for (uint256 operatorId = 0; operatorId < length; ++operatorId) {
             if (operators[operatorId].totalSigningKeys != operators[operatorId].usedSigningKeys)  // write only if update is needed
@@ -225,7 +219,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @param _signatures Several concatenated signatures for (pubkey, withdrawal_credentials, 32000000000) messages
       */
     function addSigningKeys(uint256 _operator_id, uint256 _quantity, bytes _pubkeys, bytes _signatures) external
-        authP(MANAGE_SIGNING_KEYS, arr(_operator_id))
     {
         _addSigningKeys(_operator_id, _quantity, _pubkeys, _signatures);
     }
@@ -249,7 +242,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
     )
         external
     {
-        require(msg.sender == operators[_operator_id].rewardAddress, "APP_AUTH_FAILED");
         _addSigningKeys(_operator_id, _quantity, _pubkeys, _signatures);
     }
 
@@ -260,7 +252,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       */
     function removeSigningKey(uint256 _operator_id, uint256 _index)
         external
-        authP(MANAGE_SIGNING_KEYS, arr(_operator_id))
     {
         _removeSigningKey(_operator_id, _index);
     }
@@ -271,7 +262,6 @@ contract NodeOperatorsRegistry is INodeOperatorsRegistry, IsContract, AragonApp 
       * @param _index Index of the key, starting with 0
       */
     function removeSigningKeyOperatorBH(uint256 _operator_id, uint256 _index) external {
-        require(msg.sender == operators[_operator_id].rewardAddress, "APP_AUTH_FAILED");
         _removeSigningKey(_operator_id, _index);
     }
 
