@@ -45,10 +45,38 @@ curl -o- -L https://yarnpkg.com/install.sh | bash
 6. Clone the repository and run `yarn` in its root. It will install all requirements from package.json.
 
 
-### For Ubuntu
+## For Ubuntu
 
-TBD
+Tested on vm with Ubuntu Server 20.04 1 vCPU 1GB RAM 4GB swap
 
+1. Install Docker Compose using its [official guide](https://docs.docker.com/compose/install/)
+
+2. Install jq and unzip
+    ```sh
+    apt install jq
+    apt install unzip
+    ```
+
+3. Install nvm [Node Version Manager](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+4. Using nvm install node v12.20.0 (lts).
+
+    ```sh
+    nvm install 12.20 && nvm use node
+    ```
+    
+5. Install yarn.
+    ```sh
+    npm install -g yarn
+    ```
+    
+6. Clone the repository and run `yarn` in its root. It will install all requirements from package.json.
+
+7. Go to `e2e` and build docker images for the e2e environment
+    ```sh
+    cd e2e
+    docker-compose build --no-cache
+    ```
 ## Start
 
 Go to `e2e` folder and run `startup.sh -h` in it. It will print available invocation options.
