@@ -1,0 +1,53 @@
+{
+  "roles": [
+    {
+      "name": "Create new votes",
+      "id": "CREATE_VOTES_ROLE",
+      "params": []
+    },
+    {
+      "name": "Modify support",
+      "id": "MODIFY_SUPPORT_ROLE",
+      "params": [
+        "New support",
+        "Current support"
+      ]
+    },
+    {
+      "name": "Modify quorum",
+      "id": "MODIFY_QUORUM_ROLE",
+      "params": [
+        "New quorum",
+        "Current quorum"
+      ]
+    },
+    {
+      "name": "Modify vote time",
+      "id": "MODIFY_VOTE_TIME_ROLE",
+      "params": [
+        "New vote time",
+        "Current vote time"
+      ]
+    }
+  ],
+  "environments": {
+    "default": {
+      "appName": "voting.aragonpm.eth",
+      "network": "development"
+    },
+    "rinkeby": {
+      "appName": "voting.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "staging": {
+      "appName": "voting.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "mainnet": {
+      "appName": "voting.aragonpm.eth",
+      "network": "mainnet"
+    }
+  },
+  "appName": "voting.aragonpm.eth",
+  "path": "../../contracts/0.4.24/LidoVoting.sol"
+}
