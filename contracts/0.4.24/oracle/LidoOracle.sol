@@ -78,6 +78,9 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
     bytes32 internal constant MIN_REPORTABLE_EPOCH_ID_VALUE_POSITION = keccak256("lido.lidooracle.minReportableEpochId");
     /// @dev the last reported epoch
     bytes32 internal constant LAST_REPORTED_EPOCH_ID_VALUE_POSITION = keccak256("lido.lidooracle.lastReportedEpochId");
+    /// @dev the timestamp of last push event. Will be used to check if the speed of increase/decrease is
+    /// within the permitted limits. This value exposed through the getLashPushTime() getter.
+    bytes32 internal constant LAST_PUSH_TIME_VALUE_POSITION = keccak256("lastPushTime.lidooracle.lido.eth");
     /// @dev storage for all gathered from reports data
     mapping(uint256 => EpochData) private gatheredEpochData;
 
@@ -109,6 +112,10 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
         beaconSpec.slotsPerEpoch = _slotsPerEpoch;
         beaconSpec.secondsPerSlot = _secondsPerSlot;
         beaconSpec.genesisTime = _genesisTime;
+
+        // initialize the lastPushValue with the beaconChain genesis time
+        // to avoid inadequate numbers in initial reports (before first actual push)
+        LAST_PUSH_TIME_VALUE_POSITION.setStorageAddress(_genesisTime);
 
         initialized();
     }
@@ -260,7 +267,18 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
     }
 
     /**
-     * @notice Returns all needed to oracle daemons data
+     * @notice Returns the time of the last push to the Lido. The moment when the push has
+     * been triggered and updated the values in Lido contract. Used by the oracle daemon for
+     * sanity checks of the composed report before it gets actually submitted.
+     */
+    function getLastPushTime() external view returns (uint256) {
+        return LAST_PUSH_TIME_VALUE_POSITION.getStorageUint256();
+    }
+
+    /**
+     * @notice Returns the Id of the reportable beacon epoch and the time boundaries
+     * of the current frame. Used by the oracle daemon to fetch relevant data from 
+     * beacon chain and compose acceptable report.
      */
     function getCurrentFrame()
         external view
@@ -366,6 +384,9 @@ contract LidoOracle is ILidoOracle, IsContract, AragonApp {
 
         if (address(0) != address(getPool()))
             getPool().pushBeacon(modeReport.beaconValidators, modeReport.beaconBalance);
+        
+        // Save the time of last push to be able to determine the
+        LAST_PUSH_TIME_VALUE_POSITION.setStorageUint256(_getTime());
     }
 
     function reportToUint256(Report _report) internal pure returns (uint256) {
