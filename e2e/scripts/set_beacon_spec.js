@@ -14,6 +14,7 @@ const main = async () => {
   logger.info(`Check beacon spec`)
   const _bsContract = await lidoOracleHelper.getBeaconSpec()
   const _bsNet = await eth2Helper.getBeaconSpec()
+  console.log(_bsNet)
   // assume compare only genesis time is enough
   if (parseInt(parseInt(_bsContract.genesisTime)) !== parseInt(_bsNet.genesisTime)) {
     await lidoOracleHelper.setBeaconSpec(_bsNet, proposer, voters)

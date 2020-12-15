@@ -960,11 +960,11 @@ contract('Lido', ([appManager, voting, user1, user2, user3, nobody]) => {
 
   context('treasury', () => {
     it('treasury adddress has been set after init', async () => {
-      assert.notEqual(await app.getTreasury(), ZERO_ADDRESS);
+      assert.notEqual(await app.getTreasury(), ZERO_ADDRESS)
     })
 
     it(`treasury can't be set by an arbitary address`, async () => {
-      await assertRevert(app.setTreasury(user1, { from: nobody  }))
+      await assertRevert(app.setTreasury(user1, { from: nobody }))
       await assertRevert(app.setTreasury(user1, { from: user1 }))
     })
 
@@ -974,20 +974,17 @@ contract('Lido', ([appManager, voting, user1, user2, user3, nobody]) => {
     })
 
     it('reverts when treasury is zero address', async () => {
-      await assertRevert(
-        app.setTreasury(ZERO_ADDRESS, { from: voting }),
-        "SET_TREASURY_ZERO_ADDRESS"
-      )
+      await assertRevert(app.setTreasury(ZERO_ADDRESS, { from: voting }), 'SET_TREASURY_ZERO_ADDRESS')
     })
   })
 
   context('insurance fund', () => {
     it('insurance fund adddress has been set after init', async () => {
-      assert.notEqual(await app.getInsuranceFund(), ZERO_ADDRESS);
+      assert.notEqual(await app.getInsuranceFund(), ZERO_ADDRESS)
     })
 
     it(`insurance fund can't be set by an arbitary address`, async () => {
-      await assertRevert(app.setInsuranceFund(user1, { from: nobody   }))
+      await assertRevert(app.setInsuranceFund(user1, { from: nobody }))
       await assertRevert(app.setInsuranceFund(user1, { from: user1 }))
     })
 
@@ -997,10 +994,7 @@ contract('Lido', ([appManager, voting, user1, user2, user3, nobody]) => {
     })
 
     it('reverts when insurance fund is zero address', async () => {
-      await assertRevert(
-        app.setInsuranceFund(ZERO_ADDRESS, { from: voting }),
-        "SET_INSURANCE_FUND_ZERO_ADDRESS"
-      )
+      await assertRevert(app.setInsuranceFund(ZERO_ADDRESS, { from: voting }), 'SET_INSURANCE_FUND_ZERO_ADDRESS')
     })
   })
 })

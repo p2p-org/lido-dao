@@ -21,7 +21,7 @@ import {
 import * as aclHelper from '../scripts/helpers/apps/aclHelper'
 import * as lidoHelper from '../scripts/helpers/apps/lidoHelper'
 import * as eth2Helper from '../scripts/helpers/eth2/Eth2Helper'
-import * as stEthHelper from '../scripts/helpers/apps/stEthHelper'
+// import * as stEthHelper from '../scripts/helpers/apps/stEthHelper'
 import * as votingHelper from '../scripts/helpers/apps/votingHelper'
 import * as lidoOracleHelper from '../scripts/helpers/apps/lidoOracleHelper'
 import * as nodeOperatorsHelper from '../scripts/helpers/apps/nodeOperatorsHelper'
@@ -52,7 +52,7 @@ test.before('Connecting Web3', async (t) => {
   lidoHelper.init(t.context)
   aclHelper.init(t.context)
   votingHelper.init(t.context)
-  stEthHelper.init(t.context)
+  // stEthHelper.init(t.context)
   lidoOracleHelper.init(t.context)
   nodeOperatorsHelper.init(t.context)
   vaultHelper.init(t.context)
@@ -78,7 +78,7 @@ test('Full flow test ', async (t) => {
 
   logger.info('Check dao apps are deployed')
   t.true(await lidoHelper.hasInitialized(), 'Check Lido deploy')
-  t.true(await stEthHelper.hasInitialized(), 'Check stEth deploy')
+  // t.true(await stEthHelper.hasInitialized(), 'Check stEth deploy')
   t.true(await nodeOperatorsHelper.hasInitialized(), 'Check nodeOperator deploy')
   t.true(await lidoOracleHelper.hasInitialized(), 'Check LidoOracle deploy')
   t.true(await votingHelper.hasInitialized(), 'Check voting deploy')
@@ -176,35 +176,35 @@ test('Full flow test ', async (t) => {
   logger.info('Deposit 2 ETH to Lido via Lido from user1')
   await lidoHelper.depositToLidoContract(user1, ETH(2))
   let user1Deposit = ETH(2)
-  t.is(await stEthHelper.getBalance(user1), ETH(2), 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user1), ETH(2), 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), ETH(2), 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), ETH(2), 'Total pooled ether in Lido')
 
   logger.info('Deposit 30 ETH to Lido via Lido from user1')
   await lidoHelper.depositToLidoContract(user1, ETH(30))
   user1Deposit = (+user1Deposit + +ETH(30)).toString()
-  t.is(await stEthHelper.getBalance(user1), user1Deposit, 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user1), user1Deposit, 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), '0', 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), ETH(32), 'Total pooled ether in Lido')
 
   logger.info('Deposit 2 ETH to Lido via Lido from user2')
   await lidoHelper.depositToLidoContract(user2, ETH(2))
   let user2Deposit = ETH(2)
-  t.is(await stEthHelper.getBalance(user2), ETH(2), 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user2), ETH(2), 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), ETH(2), 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), ETH(34), 'Total pooled ether in Lido')
 
   logger.info('Deposit 32 ETH to Lido via Lido  from user2')
   user2Deposit = (+user2Deposit + +ETH(32)).toString()
   await lidoHelper.depositToLidoContract(user2, ETH(32))
-  t.is(await stEthHelper.getBalance(user2), user2Deposit, 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user2), user2Deposit, 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), ETH(2), 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), ETH(66), 'Total pooled ether in Lido')
 
   logger.info('Deposit 222 ETH to Lido via Lido from user3')
   await lidoHelper.depositToLidoContract(user3, ETH(222))
   let user3Deposit = ETH(222)
-  t.is(await stEthHelper.getBalance(user3), user3Deposit, 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user3), user3Deposit, 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), '0', 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), ETH(288), 'Total pooled ether in Lido')
 
@@ -217,7 +217,7 @@ test('Full flow test ', async (t) => {
     signature: depositData.signature,
     amount: '0x0040597307000000' // 32eth in gweis converted to little endian bytes
   })
-  t.is(await stEthHelper.getBalance(user5), '0', 'Check that user5 don`t receive stEthTokens after transaction to deposit contract')
+  t.is(await lidoHelper.getBalance(user5), '0', 'Check that user5 don`t receive stEthTokens after transaction to deposit contract')
   // TODO check that validator is up/not up
 
   logger.info('Deposit 288 ETH to Lido via Lido from user3')
@@ -226,7 +226,7 @@ test('Full flow test ', async (t) => {
 
   let beaconStat = await lidoHelper.getBeaconStat()
   let usersDeposits = (+user1Deposit + +user2Deposit + +user3Deposit).toString()
-  t.is(await stEthHelper.getBalance(user3), user3Deposit, 'Check that user receive an appropriate amount of stEthTokens')
+  t.is(await lidoHelper.getBalance(user3), user3Deposit, 'Check that user receive an appropriate amount of stEthTokens')
   t.is(await lidoHelper.getBufferedEther(), '0', 'Buffered ether in Lido')
   t.is(await lidoHelper.getTotalPooledEther(), usersDeposits, 'Total pooled ether in Lido')
   t.is(await beaconStat.depositedValidators, (+usersDeposits / ETH(32)).toString(), 'Check that the ether2 stat is changed correctly')
@@ -247,12 +247,12 @@ test('Full flow test ', async (t) => {
 
   logger.info('Convert some default token to cstToken')
   const stEthTokenToWrap = ETH(32)
-  await stEthHelper.approve(cstETHAddress, stEthTokenToWrap, user1)
-  t.is(await stEthHelper.allowance(user1, cstETHAddress), stEthTokenToWrap, 'Check that stEthToken approved for convert to cSthToken ')
+  await lidoHelper.approve(cstETHAddress, stEthTokenToWrap, user1)
+  t.is(await lidoHelper.allowance(user1, cstETHAddress), stEthTokenToWrap, 'Check that stEthToken approved for convert to cSthToken ')
   await cStEthHelper.wrap(ETH(32), user1)
   t.is(await cStEthHelper.getBalance(user1), stEthTokenToWrap, 'Check that the stEthToken converted to cSthToken correctly')
-  t.is(await stEthHelper.getBalance(user1), '0', 'Check that the stEthToken balance equal 0 after convert to cStToken')
-  t.is(await stEthHelper.getBalance(cstETHAddress), stEthTokenToWrap, 'Check that the balance of cstEthAddress is calculated correctly')
+  t.is(await lidoHelper.getBalance(user1), '0', 'Check that the stEthToken balance equal 0 after convert to cStToken')
+  t.is(await lidoHelper.getBalance(cstETHAddress), stEthTokenToWrap, 'Check that the balance of cstEthAddress is calculated correctly')
 
   logger.info('Wait for validators activation')
   await waitFor(150)
@@ -262,6 +262,9 @@ test('Full flow test ', async (t) => {
   const operator1UsedSigningKeys = await nodeOperatorsHelper.getActiveSigningKeys(operator1, operator1SigningKeys)
   const operator2UsedSigningKeys = await nodeOperatorsHelper.getActiveSigningKeys(operator2, nodeOperator2SigningKeys)
   const operator3UsedSigningKeys = await nodeOperatorsHelper.getActiveSigningKeys(operator3, nodeOperator3SigningKeys)
+  console.log(operator1UsedSigningKeys)
+  console.log(operator2UsedSigningKeys)
+  console.log(operator3UsedSigningKeys)
   const operatorsUsedSigningKeys = operator1UsedSigningKeys.concat(operator2UsedSigningKeys, operator3UsedSigningKeys)
   t.true(eth2Helper.isValidatorsStarted(operatorsUsedSigningKeys), 'Check that validators have been activated with added signing keys')
 
@@ -278,36 +281,36 @@ test('Full flow test ', async (t) => {
     'Check that the remote deposited validators changed correctly'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember1), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember1)),
+    compareBN(await lidoHelper.getBalance(nosMember1), await lidoHelper.calculateNewHolderBalance(nosMember1)),
     'Check that nodeOperator1 receive an appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember2), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember2)),
+    compareBN(await lidoHelper.getBalance(nosMember2), await lidoHelper.calculateNewHolderBalance(nosMember2)),
     'Check that nodeOperator2 receive an appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember3), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember3)),
+    compareBN(await lidoHelper.getBalance(nosMember3), await lidoHelper.calculateNewHolderBalance(nosMember3)),
     'Check that nodeOperator3 receive an appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
     compareBN(
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress()),
-      await lidoHelper.calculateNewInsuranceBalance(await lidoHelper.getInsuranceFundAddress())
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress()),
+      await lidoHelper.calculateNewHolderBalance(await lidoHelper.getInsuranceFundAddress())
     ),
     'Check that the insurance fund receive appropriate amount of stEthTokens by validators rewards'
   )
 
   logger.info('Check that the users receive appropriate amount of stEthTokens by validators rewards')
   t.true(
-    compareBN(await stEthHelper.getBalance(user1), '0'),
+    compareBN(await lidoHelper.getBalance(user1), '0'),
     'Check that the user1 balance was not changed due to it was converted to cstEth'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(user2), await stEthHelper.calculateNewUserBalance(user2)),
+    compareBN(await lidoHelper.getBalance(user2), await lidoHelper.calculateNewHolderBalance(user2)),
     'Check that the user1 receive appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(user3), await stEthHelper.calculateNewUserBalance(user3)),
+    compareBN(await lidoHelper.getBalance(user3), await lidoHelper.calculateNewHolderBalance(user3)),
     'Check that the user2 receive appropriate amount of stEthTokens by validators rewards'
   )
 
@@ -316,11 +319,11 @@ test('Full flow test ', async (t) => {
   await cStEthHelper.unwrap(cstEthTokenToUnwrap, user1)
   t.is(await cStEthHelper.getBalance(user1), '0', 'Check that the user1 cstEthToken balance equal 0 after unwrap')
   t.true(
-    compareBN(await stEthHelper.getBalance(user1), await stEthHelper.calculateNewUserBalance(user1)),
+    compareBN(await lidoHelper.getBalance(user1), await lidoHelper.calculateNewHolderBalance(user1)),
     'Check that the stEthToken balance calculated correctly after push data and unwrap'
   )
   t.true(
-    +(await stEthHelper.getBalance(cstETHAddress)) < 3,
+    +(await lidoHelper.getBalance(cstETHAddress)) < 3,
     'Check that the cstETHAddress balance is equal 0 after fully unwrap of cstEthToken'
   )
 
@@ -331,45 +334,36 @@ test('Full flow test ', async (t) => {
   let lastReport = oracleReports.lastEvent
   t.true(isGreaterThanBN(prevReport.beaconBalance, lastReport.beaconBalance))
   t.true(
+    isGreaterThanBN(await lidoHelper.getBalance(user1, prevReport.blockNumber), await lidoHelper.getBalance(user1, lastReport.blockNumber))
+  )
+  t.true(
+    isGreaterThanBN(await lidoHelper.getBalance(user2, prevReport.blockNumber), await lidoHelper.getBalance(user2, lastReport.blockNumber))
+  )
+  t.true(
+    isGreaterThanBN(await lidoHelper.getBalance(user3, prevReport.blockNumber), await lidoHelper.getBalance(user3, lastReport.blockNumber))
+  )
+  t.true(
     isGreaterThanBN(
-      await stEthHelper.getBalance(user1, prevReport.blockNumber),
-      await stEthHelper.getBalance(user1, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember1, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember1, lastReport.blockNumber)
     )
   )
   t.true(
     isGreaterThanBN(
-      await stEthHelper.getBalance(user2, prevReport.blockNumber),
-      await stEthHelper.getBalance(user2, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember2, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember2, lastReport.blockNumber)
     )
   )
   t.true(
     isGreaterThanBN(
-      await stEthHelper.getBalance(user3, prevReport.blockNumber),
-      await stEthHelper.getBalance(user3, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember3, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember3, lastReport.blockNumber)
     )
   )
   t.true(
     isGreaterThanBN(
-      await stEthHelper.getBalance(nosMember1, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember1, lastReport.blockNumber)
-    )
-  )
-  t.true(
-    isGreaterThanBN(
-      await stEthHelper.getBalance(nosMember2, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember2, lastReport.blockNumber)
-    )
-  )
-  t.true(
-    isGreaterThanBN(
-      await stEthHelper.getBalance(nosMember3, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember3, lastReport.blockNumber)
-    )
-  )
-  t.true(
-    isGreaterThanBN(
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), prevReport.blockNumber),
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), lastReport.blockNumber)
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), prevReport.blockNumber),
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), lastReport.blockNumber)
     )
   )
 
@@ -379,36 +373,36 @@ test('Full flow test ', async (t) => {
   prevReport = oracleReports.prevEvent
   lastReport = oracleReports.lastEvent
   t.true(
-    isLessThanBN(await stEthHelper.getBalance(user1, prevReport.blockNumber), await stEthHelper.getBalance(user1, lastReport.blockNumber))
+    isLessThanBN(await lidoHelper.getBalance(user1, prevReport.blockNumber), await lidoHelper.getBalance(user1, lastReport.blockNumber))
   )
   t.true(
-    isLessThanBN(await stEthHelper.getBalance(user2, prevReport.blockNumber), await stEthHelper.getBalance(user2, lastReport.blockNumber))
+    isLessThanBN(await lidoHelper.getBalance(user2, prevReport.blockNumber), await lidoHelper.getBalance(user2, lastReport.blockNumber))
   )
   t.true(
-    isLessThanBN(await stEthHelper.getBalance(user3, prevReport.blockNumber), await stEthHelper.getBalance(user3, lastReport.blockNumber))
+    isLessThanBN(await lidoHelper.getBalance(user3, prevReport.blockNumber), await lidoHelper.getBalance(user3, lastReport.blockNumber))
   )
   t.true(
     isLessThanBN(
-      await stEthHelper.getBalance(nosMember1, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember1, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember1, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember1, lastReport.blockNumber)
     )
   )
   t.true(
     isLessThanBN(
-      await stEthHelper.getBalance(nosMember2, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember2, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember2, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember2, lastReport.blockNumber)
     )
   )
   t.true(
     isLessThanBN(
-      await stEthHelper.getBalance(nosMember3, prevReport.blockNumber),
-      await stEthHelper.getBalance(nosMember3, lastReport.blockNumber)
+      await lidoHelper.getBalance(nosMember3, prevReport.blockNumber),
+      await lidoHelper.getBalance(nosMember3, lastReport.blockNumber)
     )
   )
   t.true(
     isLessThanBN(
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), prevReport.blockNumber),
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), lastReport.blockNumber)
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), prevReport.blockNumber),
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress(), lastReport.blockNumber)
     )
   )
 
@@ -478,7 +472,7 @@ test('Full flow test ', async (t) => {
   await lidoHelper.depositToLidoContract(user4, user5Deposit, ZERO_ADDRESS, maxDepositCalls)
   beaconStat = await lidoHelper.getBeaconStat()
   totalDepositedValidators = (+totalDepositedValidators + +maxDepositCalls).toString()
-  t.true(compareBN(await stEthHelper.getBalance(user4), user5Deposit), 'Check that user receive an appropriate amount of stEthTokens')
+  t.true(compareBN(await lidoHelper.getBalance(user4), user5Deposit), 'Check that user receive an appropriate amount of stEthTokens')
   t.is(
     await lidoHelper.getBufferedEther(),
     (+ETH(20 * 32) - +ETH(16 * 32)).toString(),
@@ -531,41 +525,41 @@ test('Full flow test ', async (t) => {
 
   logger.info('Check that the rewards have been split between nos1,nos2,nos3 due to nos4 was deactivated')
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember1), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember1)),
+    compareBN(await lidoHelper.getBalance(nosMember1), await lidoHelper.calculateNewHolderBalance(nosMember1)),
     'Check that nodeOperator1 receive an appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember2), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember2)),
+    compareBN(await lidoHelper.getBalance(nosMember2), await lidoHelper.calculateNewHolderBalance(nosMember2)),
     'Check that nodeOperator2 receive an appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(nosMember3), await nodeOperatorsHelper.calculateNewNodeOperatorBalance(nosMember3)),
+    compareBN(await lidoHelper.getBalance(nosMember3), await lidoHelper.calculateNewHolderBalance(nosMember3)),
     'Check that nodeOperator3 receive an appropriate amount of stEthTokens by validators rewards'
   )
-  t.is(await stEthHelper.getBalance(nosMember4), '0', 'Check that nodeOperator4 don`t received reward due to deactivated')
+  t.is(await lidoHelper.getBalance(nosMember4), '0', 'Check that nodeOperator4 don`t received reward due to deactivated')
   t.true(
     compareBN(
-      await stEthHelper.getBalance(await lidoHelper.getInsuranceFundAddress()),
-      await lidoHelper.calculateNewInsuranceBalance(await lidoHelper.getInsuranceFundAddress())
+      await lidoHelper.getBalance(await lidoHelper.getInsuranceFundAddress()),
+      await lidoHelper.calculateNewHolderBalance(await lidoHelper.getInsuranceFundAddress())
     ),
     'Check that the insurance fund receive appropriate amount of stEthTokens by validators rewards'
   )
 
   logger.info('Check that the users receive appropriate amount of stEthTokens by validators rewards')
   t.true(
-    compareBN(await stEthHelper.getBalance(user1), await stEthHelper.calculateNewUserBalance(user1)),
+    compareBN(await lidoHelper.getBalance(user1), await lidoHelper.calculateNewHolderBalance(user1)),
     'Check that the user1 receive appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(user2), await stEthHelper.calculateNewUserBalance(user2)),
+    compareBN(await lidoHelper.getBalance(user2), await lidoHelper.calculateNewHolderBalance(user2)),
     'Check that the user2 receive appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(user3), await stEthHelper.calculateNewUserBalance(user3)),
+    compareBN(await lidoHelper.getBalance(user3), await lidoHelper.calculateNewHolderBalance(user3)),
     'Check that the user3 receive appropriate amount of stEthTokens by validators rewards'
   )
   t.true(
-    compareBN(await stEthHelper.getBalance(user4), await stEthHelper.calculateNewUserBalance(user4)),
+    compareBN(await lidoHelper.getBalance(user4), await lidoHelper.calculateNewHolderBalance(user4)),
     'Check that the user4 receive appropriate amount of stEthTokens by validators rewards'
   )
 

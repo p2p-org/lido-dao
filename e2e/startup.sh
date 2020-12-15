@@ -469,3 +469,4 @@ if [ $NODES ]; then
 fi
 
 echo "All done!"
+echo 224521 | sudo -S yarn test:e2e
