@@ -1082,6 +1082,15 @@ contract('Lido', ([appManager, voting, user1, user2, user3, nobody]) => {
         assertEvent(receipt, 'RecoverToVault', { expectedArgs: { vault: vault.address, token: anyToken.address, amount: 100 } })
       })
 
+      it('reverts when token transfer failed (invalid token address)', async () => {
+        await assertRevert(await app.transferToVault(nobody, { from: nobody }), 'RECOVER_TOKEN_TRANSFER_FAILED')
+      })
+
+      it('SHOULD FAIL BUT WORKS', async () => {
+        const receipt = await app.transferToVault(nobody, { from: nobody })
+        assertEvent(receipt, 'RecoverToVault')
+      })
+      
       it('recovery with unaccounted ether works and emits event', async () => {
         await app.makeUnaccountedEther({ from: user1, value: ETH(10) })
         const receipt = await app.transferToVault(ZERO_ADDRESS, { from: nobody })
