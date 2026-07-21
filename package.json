@@ -100,7 +100,7 @@
     "@truffle/contract": "^4.2.22",
     "ethers": "^5.0.19",
     "openzeppelin-solidity": "2.0.0",
-    "solidity-bytes-utils": "0.0.6",
+    "solidity-bytes-utils": "0.8.4",
     "yargs": "^16.0.3"
   },
   "husky": {
